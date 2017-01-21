@@ -1,22 +1,22 @@
 // Custom functions and configs
 configureEvents();
 
-String.prototype.startsWith = function(needle)
-{
-    return(this.indexOf(needle) == 0);
-};
-
 // Initialize global variables
 var c = document.getElementById("canvas");
 var ctx = c.getContext("2d");
 
 // Setup rules
+// var rules = {
+// 	'F' : new WeightedList({'F[+F]F[-F]F' : .8, 'F[+F]Fl[-F]F' : .2, 'F[+F]F': .7, 'F[-F]F': .7, 'F[+Ff]F': .3, 'F[-Ff]F': .3}), 
+// 	'f' : new WeightedList({'' : 1})
+// };
+
 var rules = {
-	'F' : new WeightedList({'F[+F]F[-F]F' : .8, 'F[+F]Fl[-F]F' : .2, 'F[+F]F': .7, 'F[-F]F': .7, 'F[+Ff]F': .3, 'F[-Ff]F': .3}), 
-	'f' : new WeightedList({'' : 1})
+	'ar' : new WeightedList({'arbar' : 1}),
+	'b' : new WeightedList({'bbb' : 1})
 };
 
-var lsystem = new LSystem('F', rules);
+var lsystem = new LSystem('ar', rules);
 
 // Plant renderer obj
 var plantRenderer = function(lsystem) {
@@ -74,15 +74,43 @@ var plantRenderer = function(lsystem) {
 	}
 };
 
+var cantorRenderer = function() {
+	console.log(lsystem.sentence);
+	var turtle = new Turtle(
+		// Initial state
+		[150, properties.y, 0], 
+		// Line length
+		properties.distance,
+		// Angles
+		[]
+	);
+	for(var i = 0; i < lsystem.sentence.length; i++){
+		switch(lsystem.sentence.charAt(i)) {
+			case 'a':
+				ctx.lineWidth = properties.bWidth;
+				ctx.strokeStyle = '#614126';
+				ctx.moveTo(turtle.state[0], turtle.state[1]);
+				turtle.state[0] += properties.distance;
+				ctx.lineTo(turtle.state[0], turtle.state[1]);
+				ctx.stroke();
+				break;
+			case 'b':
+				turtle.state[0] += properties.distance;
+				break;
+		}
+	}
+}
+
 ctx.fillStyle = "#d3d3d3"
 ctx.fillRect(0, 0, c.width, c.height);
 
-var properties = { distance: 10, bWidth: 4};
+var properties = { distance: 500, bWidth: 4, y: 50};
 
 var maxIterations = 5;
 
 for(var i = 0; i < maxIterations; i++) {
+	cantorRenderer(lsystem);
 	lsystem.iterate();
-	properties.dist /= 2;
+	properties.distance /= 3;
+	properties.y += 20;
 }
-plantRenderer(lsystem);

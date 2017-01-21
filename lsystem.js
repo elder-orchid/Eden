@@ -24,20 +24,14 @@ class LSystem {
 		this.rules = rules;
 		this.iterate = function() {
 			var newSentence = "";
-
-			// Cycle through every character in the existing sentence
-			for(var i = 0; i < this.sentence.length; i++) {
-				var c = this.sentence.charAt(i);
-				// Find the index of the current character in the array of rule predecessors
-				var wList = rules[c];
-
-				// If there is not rule for this character, just keep it
-				if(wList === undefined) {
-					newSentence += c;
-				}
-				// Otherwise, use the successor for that rule
-				else {
-					newSentence += wList.random();
+			
+			for(var index in this.sentence) {
+				for(var rule in rules) {
+					if(this.sentence.substring(index, this.sentence.length).indexOf(rule) === 0) {
+						newSentence += rules[rule].random();
+						this.sentence.slice(rule.length);
+						break;
+					}
 				}
 			}
 			this.sentence = newSentence;
