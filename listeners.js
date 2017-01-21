@@ -1,5 +1,5 @@
 function configureEvents() {
-
+	addEvent(window, 'click', onClick);
 }
 
 function addEvent(object, type, callback) {
@@ -12,3 +12,8 @@ function addEvent(object, type, callback) {
         object["on"+type] = callback;
     }
 };
+
+
+function onClick() {
+	newPlant();
+}
