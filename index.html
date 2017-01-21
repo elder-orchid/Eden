@@ -4,7 +4,15 @@
 		<title>Eden</title>
 	</head>
 	<body>
-		<canvas id="canvas" width="1000" height="1000"></canvas>
+		<div style="position: relative;">
+			<canvas id="bgcanv" width="1000" height="1000"
+			style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+			<canvas id="plantcanv" width="1000" height="1000"
+			style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+			<canvas id="floracanv" width="1000" height="1000"
+			style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+		</div>
+
 		<script type="text/javascript" src="listeners.js"></script>
 		<script type="text/javascript" src="lsystem.js"></script>
 		<script type="text/javascript" src="main.js"></script>

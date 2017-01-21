@@ -2,45 +2,42 @@
 configureEvents();
 
 // Initialize global variables
-var c = document.getElementById("canvas");
-var ctx = c.getContext("2d");
+var bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
+var plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
+var floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
 
 // Setup rules
-// var rules = {
-// 	'F' : new WeightedList({'F[+F]F[-F]F' : .8, 'F[+F]Fl[-F]F' : .2, 'F[+F]F': .7, 'F[-F]F': .7, 'F[+Ff]F': .3, 'F[-Ff]F': .3}), 
-// 	'f' : new WeightedList({'' : 1})
-// };
-
 var rules = {
-	'ar' : new WeightedList({'arbar' : 1}),
-	'b' : new WeightedList({'bbb' : 1})
+	// 'F' : new WeightedList({'F[+F]F[-F]F' : .33, 'F[+F]F': .33, 'F[-F]F': .34})
+	'F' : new WeightedList({'F[+F]F[-F]F' : .3, 'F[+F]Fl[-F]F' : .7, 'F[+F]F': .7, 'F[-F]F': .7, 'F[+Ff]F': .3, 'F[-Ff]F': .3}),
+	'f' : new WeightedList({'' : 1}),
+	'l]' : new WeightedList({']' : 1}),
 };
 
-var lsystem = new LSystem('ar', rules);
+var lsystem = new LSystem('F', rules);
 
 // Plant renderer obj
 var plantRenderer = function(lsystem) {
 	console.log(lsystem.sentence);
 	var turtle = new Turtle(
 		// Initial state
-		[c.width/2, c.height, -Math.PI / 2], 
-		// Line length
-		properties.dist,
+		[plantcanv.width/2, plantcanv.height, -Math.PI / 2],
 		// Angles
 		[25.7 * (Math.PI/180), 15  * (Math.PI/180)]
 	);
 	for(var i = 0; i < lsystem.sentence.length; i++){
+		
 		switch(lsystem.sentence.charAt(i)) {
 		case 'F':
-			ctx.beginPath();
-			ctx.lineWidth = properties.bWidth;
-			ctx.strokeStyle = '#614126';
-			ctx.moveTo(turtle.state[0], turtle.state[1]);
+			plantctx.beginPath();
+			plantctx.lineWidth = properties.bWidth;
+			plantctx.strokeStyle = '#614126';
+			plantctx.moveTo(turtle.state[0], turtle.state[1]);
 			turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
 			turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
-			ctx.lineTo(turtle.state[0], turtle.state[1]);
-			ctx.stroke();
-			ctx.closePath();
+			plantctx.lineTo(turtle.state[0], turtle.state[1]);
+			plantctx.stroke();
+			plantctx.closePath();
 			break;
 		case '-':
 			turtle.state[2] += turtle.angles[Math.floor(Math.random() * turtle.angles.length)];
@@ -57,60 +54,41 @@ var plantRenderer = function(lsystem) {
 			properties.bWidth *= .95;
 			break;
 		case 'f':
-			ctx.beginPath();
-			ctx.arc(turtle.state[0], turtle.state[1], 10, 0, 2 * Math.PI, false);
-			ctx.fillStyle = 'pink';
-			ctx.fill();
-			ctx.closePath();
+			floractx.beginPath();
+			floractx.arc(turtle.state[0], turtle.state[1], 10, 0, 2 * Math.PI, false);
+			floractx.fillStyle = 'pink';
+			floractx.fill();
+			floractx.closePath();
 			break;
 		case 'l': 
-			ctx.beginPath();
-			ctx.ellipse(turtle.state[0], turtle.state[1], 10, 5, Math.PI/6 * (Math.random() < 0.5 ? -1 : 1) + turtle.state[2], 0, 2 * Math.PI, true);
-			ctx.fillStyle = 'green';
-			ctx.fill();
-			ctx.closePath();
+			floractx.beginPath();
+			floractx.ellipse(turtle.state[0], turtle.state[1], 20, 5, turtle.state[2], 0, 2 * Math.PI, true);
+			floractx.fillStyle = 'green';
+			floractx.fill();
+			floractx.strokeStyle = 'darkgreen';
+			floractx.lineWidth = 2;
+			floractx.stroke();
+			floractx.closePath();
 			break;
 		}
 	}
 };
 
-var cantorRenderer = function() {
-	console.log(lsystem.sentence);
-	var turtle = new Turtle(
-		// Initial state
-		[150, properties.y, 0], 
-		// Line length
-		properties.distance,
-		// Angles
-		[]
-	);
-	for(var i = 0; i < lsystem.sentence.length; i++){
-		switch(lsystem.sentence.charAt(i)) {
-			case 'a':
-				ctx.lineWidth = properties.bWidth;
-				ctx.strokeStyle = '#614126';
-				ctx.moveTo(turtle.state[0], turtle.state[1]);
-				turtle.state[0] += properties.distance;
-				ctx.lineTo(turtle.state[0], turtle.state[1]);
-				ctx.stroke();
-				break;
-			case 'b':
-				turtle.state[0] += properties.distance;
-				break;
-		}
-	}
-}
 
-ctx.fillStyle = "#d3d3d3"
-ctx.fillRect(0, 0, c.width, c.height);
+var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
+grd.addColorStop(0, "lightblue");
+grd.addColorStop(1, "white");
 
-var properties = { distance: 500, bWidth: 4, y: 50};
+bgctx.fillStyle = grd;
+bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
+
+var properties = { distance: 400, bWidth: 4};
 
 var maxIterations = 5;
 
 for(var i = 0; i < maxIterations; i++) {
-	cantorRenderer(lsystem);
 	lsystem.iterate();
-	properties.distance /= 3;
-	properties.y += 20;
+	properties.distance /= 2;
 }
+
+plantRenderer(lsystem);

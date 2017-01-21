@@ -24,14 +24,19 @@ class LSystem {
 		this.rules = rules;
 		this.iterate = function() {
 			var newSentence = "";
-			
 			for(var index in this.sentence) {
+				var swapped = false;
 				for(var rule in rules) {
 					if(this.sentence.substring(index, this.sentence.length).indexOf(rule) === 0) {
 						newSentence += rules[rule].random();
 						this.sentence.slice(rule.length);
+						swapped = true;
 						break;
 					}
+				}
+				if(!swapped) {
+					newSentence += this.sentence.charAt(index);
+					this.sentence.slice(1);
 				}
 			}
 			this.sentence = newSentence;
@@ -40,10 +45,9 @@ class LSystem {
 }
 
 class Turtle {
-	constructor(state, dist, angles) {
+	constructor(state, angles) {
 		this.stack = [];
 		this.state = state;
-		this.dist = dist;
 		this.angles = angles;
 	}
 }
