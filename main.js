@@ -27,17 +27,16 @@ function newPlant() {
 
 	// Setup rules
 	rules = {
-		'F' : new WeightedList({'F[+F]F[-F]F' : .3, 'F[+F]Fl[-F]F' : .7, 'F[+F]F': .8, 'F[-F]F': .8, 'F[+Ff]F': .2, 'F[-Ff]F': .2}),
-		'f' : new WeightedList({'' : 1}),
+		'F' : new WeightedList({'F[-F+F][+F]': .33, 'F[-F][+F[-F]F]': .33 * .8, 'F[-F][+F[-F]Ff]': .33 * .2, 'F[-F]F': .33})
 	};
 
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		distance: 400, 
+		distance: 250, 
 		bWidth: 4, 
-		leafLength: 20, 
-		leafWidth: 5, 
+		petalLength: 25, 
+		leafRadius: 50,
 		flowerLength: 10, 
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
 		angleDeltas: [-2 * Math.PI/180, 4 * Math.PI/180, 0]
@@ -45,17 +44,25 @@ function newPlant() {
 
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
-		properties.distance /= 2;
+		properties.distance /= 1.4;
 	}
 }
 
-
-var drawLeaf = function(turtle) {
+var drawPetal = function(turtle) {
 	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.leafLength, properties.leafWidth, turtle.state[2], 0, 2 * Math.PI, true);
+	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength, properties.petalLength/10, turtle.state[2], 0, 2 * Math.PI, true);
 	floractx.fill();
 	floractx.stroke();
 	floractx.closePath();
+}
+
+var drawLeaf = function(turtle) {
+	floractx.globalAlpha = 0.4;
+	floractx.beginPath();
+	floractx.ellipse(turtle.state[0], turtle.state[1], properties.leafRadius, properties.leafRadius, turtle.state[2], 0, 2 * Math.PI, true);
+	floractx.fill();
+	floractx.closePath();
+	floractx.globalAlpha = 1;
 }
 
 // Plant renderer obj
@@ -95,15 +102,15 @@ var plantRenderer = function(lsystem) {
 			properties.bWidth *= .95;
 			break;
 		case 'f':
-			floractx.fillStyle = 'pink';
-			floractx.strokeStyle = 'pink';
+			floractx.fillStyle = '#edd8e9';
+			floractx.strokeStyle = '#edd8e9';
 			for(var j = 0; j < 5; j++) {
-				drawLeaf(turtle);
+				drawPetal(turtle);
 				turtle.state[2] += turtle.angles[2];
 			}
 
 			floractx.beginPath();
-			floractx.fillStyle = 'red';
+			floractx.fillStyle = '#e4097d';
 			floractx.arc(turtle.state[0], turtle.state[1], 5, 0, 2 * Math.PI, false);
 			floractx.fill();
 			floractx.closePath();
@@ -112,7 +119,7 @@ var plantRenderer = function(lsystem) {
 			floractx.fillStyle = 'green';
 			floractx.strokeStyle = 'darkgreen';
 			floractx.lineWidth = 2;
-			drawLeaf(turtle);
+			//drawLeaf(turtle);
 			break;
 		}
 	}
