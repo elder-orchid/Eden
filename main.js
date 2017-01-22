@@ -55,7 +55,6 @@ function newPlant() {
 		lsystem.iterate();
 		properties.distance /= 1.4;
 	}
-	console.log(lsystem.sentence);
 }
 
 var drawPetal = function(turtle) {
@@ -204,8 +203,6 @@ animationLoop = function() {
 		newPlant();
 		ageInc ^= true;
 	}
-
-	console.log(ageProgress + ":" + ageInc);
 
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
