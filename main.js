@@ -20,7 +20,7 @@ floracanv.height = window.innerHeight;
 
 
 function initCanvas() {
-	var audio = new Audio('eden.mp3');
+	var audio = new Audio('assets/eden.mp3');
 	audio.addEventListener('ended', function() {
 	    this.currentTime = 0;
 	    this.play();
@@ -147,15 +147,25 @@ var plantRenderer = function(lsystem) {
 	}
 };
 
+// Mathematical functions
 var avg = function(x, y, p) {
 	return Math.round(x * (1 - p) + y * p);
 }
 
+var k = 1/5;
+var sigmoid = function(x) {
+	return 1 / (1 + Math.pow(Math.E, -k * x));
+}
+
+var sigprime = function(x) {
+	return sigmoid(x) * (1 - sigmoid(x));
+}
+
+
 var animationLoop;
 
 (function(){
-var inc = true,
-theta = 0, 
+var theta = 0, 
 dtheta = Math.PI/1000,
 colors = [
 	[0, 0, 255], 
@@ -163,8 +173,19 @@ colors = [
 	[255, 0, 0],
 	[255, 255, 0]
 ],
-progress = 0, 
-rate = 0.0005;
+colorProgress = 0, 
+colorInc = true,
+colorRate = 0.0005,
+
+ageProgress = 0,
+ageInc = true,
+ageRate = 0.05;
+
+
+var sigscale = function() {
+
+}
+
 
 animationLoop = function() {
 	// Modify angles
@@ -176,15 +197,24 @@ animationLoop = function() {
 	properties.bWidth = 10;
 
 	// Modify colors
-	progress += inc ? rate : -rate;
+	colorProgress += colorInc ? colorRate : -colorRate;
 
-	if(progress <= 0 || progress >= 1)
-		inc ^= true;
+	if(colorProgress <= 0 || colorProgress >= 1)
+		colorInc ^= true;
+
+	// Age
+	properties.distance = ageProgress;
+	ageProgress += (ageInc ? 1 : -1) * sigprime(ageProgress - 25);
+
+	if(ageProgress <= 0 || ageProgress >= 50)
+		ageInc ^= true;
+
+	console.log(ageProgress + ":" + ageInc);
 
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
 	for(var i = 0; i < 2; i++) {
-		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], progress) + "," + avg(colors[i][1], colors[2+i][1], progress) + "," + avg(colors[i][2], colors[2+i][2], progress) + ")");
+		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], colorProgress) + "," + avg(colors[i][1], colors[2+i][1], colorProgress) + "," + avg(colors[i][2], colors[2+i][2], colorProgress) + ")");
 	}
 
 	bgctx.fillStyle = grd;
