@@ -1,6 +1,3 @@
-// Custom functions and configs
-configureEvents();
-
 // Initialize global variables
 var bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
 var plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
@@ -47,11 +44,10 @@ function newPlant() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		distance: 250, 
+		distance: 0, 
 		bWidth: 0, 
-		petalLength: 15, 
-		leafRadius: 15,
-		flowerLength: 10, 
+		petalLength: 0, 
+		leafRadius: 0,
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
 	};
 
@@ -73,13 +69,12 @@ var drawPetal = function(turtle) {
 var drawLeaf = function(turtle) {
 	floractx.globalAlpha = 0.7;
 	floractx.beginPath();
-	var ydist = 30, xdist = 30;
 	floractx.moveTo(turtle.state[0], turtle.state[1]);
 	floractx.bezierCurveTo(
-		turtle.state[0] - xdist + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * ydist, 
-		turtle.state[0] + xdist + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * ydist,
+		turtle.state[0] - properties.leafRadius + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius, 
+		turtle.state[0] + properties.leafRadius + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius,
 		turtle.state[0], 
 		turtle.state[1]);
 	floractx.fill();
@@ -133,7 +128,7 @@ var plantRenderer = function(lsystem) {
 
 			floractx.beginPath();
 			floractx.fillStyle = '#e4097d';
-			floractx.arc(turtle.state[0], turtle.state[1], 5, 0, 2 * Math.PI, false);
+			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength / 3, 0, 2 * Math.PI, false);
 			floractx.fill();
 			floractx.closePath();
 			break;
@@ -161,7 +156,6 @@ var sigprime = function(x) {
 	return sigmoid(x) * (1 - sigmoid(x));
 }
 
-
 var animationLoop;
 
 (function(){
@@ -177,15 +171,9 @@ colorProgress = 0,
 colorInc = true,
 colorRate = 0.0005,
 
-ageProgress = 0,
+ageProgress = 0.5,
 ageInc = true,
 ageRate = 0.05;
-
-
-var sigscale = function() {
-
-}
-
 
 animationLoop = function() {
 	// Modify angles
@@ -204,10 +192,18 @@ animationLoop = function() {
 
 	// Age
 	properties.distance = ageProgress;
+	properties.petalLength = ageProgress * 3/10;
+	properties.leafRadius = ageProgress * 4/5;
+	
 	ageProgress += (ageInc ? 1 : -1) * sigprime(ageProgress - 25);
 
-	if(ageProgress <= 0 || ageProgress >= 50)
+	if(ageProgress >= 50) {
 		ageInc ^= true;
+	}
+	else if(ageProgress <= 0.01) {
+		newPlant();
+		ageInc ^= true;
+	}
 
 	console.log(ageProgress + ":" + ageInc);
 
