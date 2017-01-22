@@ -5,6 +5,7 @@ configureEvents();
 var bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
 var plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
 var floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
+var properties, lsystem, rules;
 
 // Set dimensions to fullscreen
 bgcanv.width = window.innerWidth;
@@ -16,19 +17,12 @@ plantcanv.height = window.innerHeight;
 floracanv.width = window.innerWidth;
 floracanv.height = window.innerHeight;
 
-var properties, lsystem, rules;
 
 
 function initCanvas() {
+	var audio = new Audio('eden.mp3');
+	audio.play();
 	newPlant();
-
-	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
-	grd.addColorStop(0, "lightblue");
-	grd.addColorStop(1, "white");
-
-	bgctx.fillStyle = grd;
-	bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
-
 	requestAnimationFrame(animationLoop);
 }
 
@@ -38,25 +32,30 @@ function newPlant() {
 
 	// Setup rules
 	rules = {
-		'F' : new WeightedList({'F[-F+F][+F]': .33, 'F[-F][+F[-F]F]': .33 * .8, 'F[-F][+F[-F]Ff]': .33 * .2, 'F[-F]Fl': .33})
+		'F': new WeightedList({
+			'F[-F+F][+Fl]': .33, 
+			'F[-Fl][+F[-F]F]': .33 * .8, 
+			'F[-F][+F[-Fl]Ff]': .33 * .2, 
+			'F[-Fl]F': .33
+		})
 	};
 
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
 		distance: 250, 
-		bWidth: 5, 
+		bWidth: 0, 
 		petalLength: 15, 
 		leafRadius: 15,
 		flowerLength: 10, 
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
-		angleDeltas: [-2 * Math.PI/180, 4 * Math.PI/180, 0]
 	};
 
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
 		properties.distance /= 1.4;
 	}
+	console.log(lsystem.sentence);
 }
 
 var drawPetal = function(turtle) {
@@ -68,9 +67,17 @@ var drawPetal = function(turtle) {
 }
 
 var drawLeaf = function(turtle) {
-	floractx.globalAlpha = 0.4;
+	floractx.globalAlpha = 0.7;
 	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.leafRadius, properties.leafRadius, turtle.state[2], 0, 2 * Math.PI, true);
+	var ydist = 30, xdist = 30;
+	floractx.moveTo(turtle.state[0], turtle.state[1]);
+	floractx.bezierCurveTo(
+		turtle.state[0] - xdist + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * ydist, 
+		turtle.state[0] + xdist + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * ydist,
+		turtle.state[0], 
+		turtle.state[1]);
 	floractx.fill();
 	floractx.closePath();
 	floractx.globalAlpha = 1;
@@ -106,11 +113,11 @@ var plantRenderer = function(lsystem) {
 			break;
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth *= .75;
+			properties.bWidth *= 4/6;
 			break;
 		case ']':
 			turtle.state = turtle.stack.pop();
-			properties.bWidth *= 1.33;
+			properties.bWidth *= 6/4;
 			break;
 		case 'f':
 			floractx.fillStyle = '#edd8e9';
@@ -136,17 +143,53 @@ var plantRenderer = function(lsystem) {
 	}
 };
 
+var avg = function(x, y, p) {
+	return Math.round(x * (1 - p) + y * p);
+}
 
-var theta = 0, dtheta = Math.PI/1000;
-function animationLoop() {
+var animationLoop;
+
+(function(){
+var inc = true,
+theta = 0, 
+dtheta = Math.PI/1000,
+colors = [
+	[0, 0, 255], 
+	[255, 255, 255],
+	[255, 0, 0],
+	[255, 255, 0]
+],
+progress = 0, 
+rate = 0.0005;
+
+animationLoop = function() {
+	// Modify angles
 	theta += dtheta;
 	theta %= Math.PI * 2;
-
 	properties.angles[0] = (Math.sin(theta) + 4) / 10;
-	
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
+	properties.bWidth = 10;
+
+	// Modify colors
+	if(inc)
+		progress += rate;
+	else
+		progress -= rate;
+
+	if(progress <= 0 || progress >= 1)
+		inc ^= true;
+
+	// Create gradient
+	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
+	for(var i = 0; i < 2; i++) {
+		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], progress) + "," + avg(colors[i][1], colors[2+i][1], progress) + "," + avg(colors[i][2], colors[2+i][2], progress) + ")");
+	}
+
+	bgctx.fillStyle = grd;
+	bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
+
 	plantRenderer(lsystem);
-	properties.bWidth = 4;
 	requestAnimationFrame(animationLoop);
-}
+}	
+})();

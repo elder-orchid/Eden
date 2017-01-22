@@ -1,4 +1,5 @@
 function configureEvents() {
+	addEvent(window, 'keydown', onKeyDown);
 	addEvent(window, 'click', onClick);
 }
 
@@ -13,10 +14,11 @@ function addEvent(object, type, callback) {
     }
 };
 
-
 function onClick() {
 	newPlant();
-	//floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
-	//plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
-	//plantRenderer(lsystem);
+}
+
+function onKeyDown(e) {
+	if(e.which == 32)
+		newPlant();
 }
