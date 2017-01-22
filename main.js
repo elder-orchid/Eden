@@ -5,6 +5,17 @@ configureEvents();
 var bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
 var plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
 var floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
+
+// Set dimensions to fullscreen
+bgcanv.width = window.innerWidth;
+bgcanv.height = window.innerHeight;
+
+plantcanv.width = window.innerWidth;
+plantcanv.height = window.innerHeight;
+
+floracanv.width = window.innerWidth;
+floracanv.height = window.innerHeight;
+
 var properties, lsystem, rules;
 
 
@@ -27,16 +38,16 @@ function newPlant() {
 
 	// Setup rules
 	rules = {
-		'F' : new WeightedList({'F[-F+F][+F]': .33, 'F[-F][+F[-F]F]': .33 * .8, 'F[-F][+F[-F]Ff]': .33 * .2, 'F[-F]F': .33})
+		'F' : new WeightedList({'F[-F+F][+F]': .33, 'F[-F][+F[-F]F]': .33 * .8, 'F[-F][+F[-F]Ff]': .33 * .2, 'F[-F]Fl': .33})
 	};
 
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
 		distance: 250, 
-		bWidth: 4, 
-		petalLength: 25, 
-		leafRadius: 50,
+		bWidth: 5, 
+		petalLength: 15, 
+		leafRadius: 15,
 		flowerLength: 10, 
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
 		angleDeltas: [-2 * Math.PI/180, 4 * Math.PI/180, 0]
@@ -50,7 +61,7 @@ function newPlant() {
 
 var drawPetal = function(turtle) {
 	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength, properties.petalLength/10, turtle.state[2], 0, 2 * Math.PI, true);
+	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength, properties.petalLength/4, turtle.state[2], 0, 2 * Math.PI, true);
 	floractx.fill();
 	floractx.stroke();
 	floractx.closePath();
@@ -95,11 +106,11 @@ var plantRenderer = function(lsystem) {
 			break;
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth *= 1.05;
+			properties.bWidth *= .75;
 			break;
 		case ']':
 			turtle.state = turtle.stack.pop();
-			properties.bWidth *= .95;
+			properties.bWidth *= 1.33;
 			break;
 		case 'f':
 			floractx.fillStyle = '#edd8e9';
@@ -119,7 +130,7 @@ var plantRenderer = function(lsystem) {
 			floractx.fillStyle = 'green';
 			floractx.strokeStyle = 'darkgreen';
 			floractx.lineWidth = 2;
-			//drawLeaf(turtle);
+			drawLeaf(turtle);
 			break;
 		}
 	}
@@ -131,12 +142,11 @@ function animationLoop() {
 	theta += dtheta;
 	theta %= Math.PI * 2;
 
-	// for(var i = 0; i < properties.angles.length; i++) {
-	// 	properties.angles[i] = Math.sin(theta);
-	// }
-
+	properties.angles[0] = (Math.sin(theta) + 4) / 10;
+	
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
-	//plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
+	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantRenderer(lsystem);
+	properties.bWidth = 4;
 	requestAnimationFrame(animationLoop);
 }

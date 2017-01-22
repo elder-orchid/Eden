@@ -16,4 +16,7 @@ function addEvent(object, type, callback) {
 
 function onClick() {
 	newPlant();
+	//floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
+	//plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
+	//plantRenderer(lsystem);
 }
