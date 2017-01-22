@@ -14,8 +14,6 @@ plantcanv.height = window.innerHeight;
 floracanv.width = window.innerWidth;
 floracanv.height = window.innerHeight;
 
-
-
 function initCanvas() {
 	var audio = new Audio('assets/eden.mp3');
 	audio.addEventListener('ended', function() {
@@ -44,10 +42,6 @@ function newPlant() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		distance: 0, 
-		bWidth: 0, 
-		petalLength: 0, 
-		leafRadius: 0,
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
 	};
 
@@ -171,8 +165,7 @@ colorInc = true,
 colorRate = 0.0005,
 
 ageProgress = 0.5,
-ageInc = true,
-ageRate = 0.05;
+ageInc = true;
 
 animationLoop = function() {
 	// Modify angles
