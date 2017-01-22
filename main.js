@@ -21,6 +21,10 @@ floracanv.height = window.innerHeight;
 
 function initCanvas() {
 	var audio = new Audio('eden.mp3');
+	audio.addEventListener('ended', function() {
+	    this.currentTime = 0;
+	    this.play();
+	}, false);
 	audio.play();
 	newPlant();
 	requestAnimationFrame(animationLoop);
@@ -172,10 +176,7 @@ animationLoop = function() {
 	properties.bWidth = 10;
 
 	// Modify colors
-	if(inc)
-		progress += rate;
-	else
-		progress -= rate;
+	progress += inc ? rate : -rate;
 
 	if(progress <= 0 || progress >= 1)
 		inc ^= true;
