@@ -140,7 +140,7 @@ var avg = function(x, y, p) {
 	return Math.round(x * (1 - p) + y * p);
 }
 
-var k = 1/5;
+var k = 10;
 var sigmoid = function(x) {
 	return 1 / (1 + Math.pow(Math.E, -k * x));
 }
@@ -152,20 +152,19 @@ var sigprime = function(x) {
 var animationLoop;
 
 (function(){
-var theta = 0, 
-dtheta = Math.PI/1000,
-colors = [
-	[0, 0, 255], 
-	[255, 255, 255],
-	[255, 0, 0],
-	[255, 255, 0]
-],
-colorProgress = 0, 
-colorInc = true,
-colorRate = 0.0005,
+var theta = 0;
+var dtheta = Math.PI/1000;
+var colors = [
+	[94, 53, 177], // Purple
+	[0, 0, 0], // Black
 
-ageProgress = 0.5,
-ageInc = true;
+	[255, 235, 59], // Yellow
+	[100, 181, 246] // Blue
+	
+];
+
+var progress = 0.01;
+var inc = true;
 
 animationLoop = function() {
 	// Modify angles
@@ -176,31 +175,27 @@ animationLoop = function() {
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	properties.bWidth = 10;
 
-	// Modify colors
-	colorProgress += colorInc ? colorRate : -colorRate;
-
-	if(colorProgress <= 0 || colorProgress >= 1)
-		colorInc ^= true;
-
-	// Age
-	properties.distance = ageProgress;
-	properties.petalLength = ageProgress * 3/10;
-	properties.leafRadius = ageProgress * 4/5;
+	// Passage of time
+	properties.distance = progress * 50;
+	properties.petalLength = progress * 15;
+	properties.leafRadius = progress * 40;
 	
-	ageProgress += (ageInc ? 1 : -1) * sigprime(ageProgress - 25);
+	progress += (inc ? 1 : -1) * sigprime(progress - .5) / 20;
 
-	if(ageProgress >= 50) {
-		ageInc ^= true;
+	if(progress >= 1) {
+		inc ^= true;
 	}
-	else if(ageProgress <= 0.01) {
+	else if(progress < 0.01) {
 		newPlant();
-		ageInc ^= true;
+		inc ^= true;
 	}
+
+	console.log(progress);
 
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
 	for(var i = 0; i < 2; i++) {
-		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], colorProgress) + "," + avg(colors[i][1], colors[2+i][1], colorProgress) + "," + avg(colors[i][2], colors[2+i][2], colorProgress) + ")");
+		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], progress) + "," + avg(colors[i][1], colors[2+i][1], progress) + "," + avg(colors[i][2], colors[2+i][2], progress) + ")");
 	}
 
 	bgctx.fillStyle = grd;
