@@ -1,20 +1,22 @@
 // Initialize global variables
-var bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
-var plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
-var floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
-var properties, lsystem, rules;
-
-// Set dimensions to fullscreen
-bgcanv.width = window.innerWidth;
-bgcanv.height = window.innerHeight;
-
-plantcanv.width = window.innerWidth;
-plantcanv.height = window.innerHeight;
-
-floracanv.width = window.innerWidth;
-floracanv.height = window.innerHeight;
+var bgcanv, plantcanv, floracanv, properties, lsystem, rules;
 
 function initCanvas() {
+	// Initialize canvases
+	bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
+	plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
+	floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
+
+	// Set dimensions to fullscreen
+	bgcanv.width = window.innerWidth;
+	bgcanv.height = window.innerHeight;
+
+	plantcanv.width = window.innerWidth;
+	plantcanv.height = window.innerHeight;
+
+	floracanv.width = window.innerWidth;
+	floracanv.height = window.innerHeight;
+
 	var audio = new Audio('assets/eden.mp3');
 	audio.addEventListener('ended', function() {
 	    this.currentTime = 0;
@@ -25,7 +27,7 @@ function initCanvas() {
 	requestAnimationFrame(animationLoop);
 }
 
-function newPlant() {
+var newPlant = function() {
 	floractx.clearRect(0, 0, floracanv.width, floracanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
@@ -42,7 +44,7 @@ function newPlant() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
+		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5]
 	};
 
 	for(var i = 0; i < maxIterations; i++) {
