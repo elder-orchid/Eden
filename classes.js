@@ -45,10 +45,8 @@ class LSystem {
 }
 
 class Turtle {
-	constructor(state, angles, girth) {
+	constructor(state) {
 		this.stack = [];
 		this.state = state;
-		this.angles = angles;
-		this.girth = girth;
 	}
 }

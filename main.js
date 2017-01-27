@@ -1,7 +1,7 @@
 // Initialize global variables
 var bgcanv, plantcanv, floracanv, properties, lsystem, rules;
 
-function initCanvas() {
+var initCanvas = function() {
 	// Initialize canvases
 	bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
 	plantcanv = document.getElementById("plantcanv"), plantctx = plantcanv.getContext("2d");
@@ -81,9 +81,7 @@ var drawLeaf = function(turtle) {
 var plantRenderer = function(lsystem) {
 	var turtle = new Turtle(
 		// Initial state
-		[plantcanv.width/2, plantcanv.height, -Math.PI / 2],
-		// Angles
-		properties.angles
+		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
 	);
 	for(var i = 0; i < lsystem.sentence.length; i++){
 		
@@ -100,10 +98,10 @@ var plantRenderer = function(lsystem) {
 			plantctx.closePath();
 			break;
 		case '-':
-			turtle.state[2] += turtle.angles[0];
+			turtle.state[2] += properties.angles[0];
 			break; 
 		case '+':
-			turtle.state[2] -= turtle.angles[1];
+			turtle.state[2] -= properties.angles[1];
 			break;
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
@@ -118,7 +116,7 @@ var plantRenderer = function(lsystem) {
 			floractx.strokeStyle = '#edd8e9';
 			for(var j = 0; j < 5; j++) {
 				drawPetal(turtle);
-				turtle.state[2] += turtle.angles[2];
+				turtle.state[2] += properties.angles[2];
 			}
 
 			floractx.beginPath();
@@ -162,7 +160,6 @@ var colors = [
 
 	[255, 235, 59], // Yellow
 	[100, 181, 246] // Blue
-	
 ];
 
 var progress = 0.01;
