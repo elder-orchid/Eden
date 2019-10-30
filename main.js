@@ -1,6 +1,6 @@
 // Initialize global variables
 var bgcanv, plantcanv, floracanv, properties, lsystem, rules;
-var depth = 0, progress = 0;
+var progress = 0;
 var initCanvas = function() {
 	// Initialize canvases
 	bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
@@ -50,7 +50,8 @@ var newPlant = function() {
 		// Passage of time
 		distance: 50,
 		petalLength: 15,
-		leafRadius: 40
+		leafRadius: 40,
+		depth: 0
 	};
 
 	for(var i = 0; i < maxIterations; i++) {
@@ -91,19 +92,49 @@ var plantRenderer = function(lsystem) {
 
 	// percent growth of this layer
 	var stepsize = 1.0 / (maxIterations + 1);
-	var percent = (progress - (depth * stepsize)) / ((depth + 1) * stepsize);
-	var cd = 0;
+
+	//var percent = ((progress - (depth * stepsize)) / ((depth + 1) * stepsize)) % 1;
+	var percent = (progress - (properties.depth * stepsize)) / stepsize;
+	var cd = 0, cb = 0;
+
+
+	var branches = branchCounter(lsystem.sentence, properties.depth);
+	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 
 	for(var i = 0; i < lsystem.sentence.length; i++) {
+
 		switch(lsystem.sentence.charAt(i)) {
 		case 'F':
 			plantctx.beginPath();
 			plantctx.lineWidth = properties.bWidth;
 			plantctx.strokeStyle = '#614126';
-			plantctx.moveTo(turtle.state[0], turtle.state[1]);
-			turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
-			turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
-			plantctx.lineTo(turtle.state[0], turtle.state[1]);
+			//console.log(cb);
+			
+			if (cd == properties.depth) {
+				//console.log(percent);
+				plantctx.moveTo(turtle.state[0], turtle.state[1]);
+				var x = turtle.state[0] + Math.cos(turtle.state[2]) * properties.distance * percent;
+				var y = turtle.state[1] + Math.sin(turtle.state[2]) * properties.distance * percent;
+				
+				cb++;
+
+				if (cb <= Math.floor(percent * branches)) {
+					turtle.state[0] = x;
+					turtle.state[1] = y;
+				}
+				// else {
+				// 	x += Math.cos(turtle.state[2]) / branches;
+				// 	y += Math.sin(turtle.state[2]) / branches;
+				// }
+				plantctx.lineTo(x, y);
+			}
+			else if (cd <= properties.depth) {
+				plantctx.moveTo(turtle.state[0], turtle.state[1]);
+				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
+				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
+				plantctx.lineTo(turtle.state[0], turtle.state[1]);
+			}
+			
 			plantctx.stroke();
 			plantctx.closePath();
 			break;
@@ -117,38 +148,79 @@ var plantRenderer = function(lsystem) {
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
 			properties.bWidth *= 4/6;
 			properties.distance *= 1/1.1;
+			cd++;
 			break;
 		case ']':
 			turtle.state = turtle.stack.pop();
 			properties.bWidth *= 6/4;
 			properties.distance *= 1.1;
+			cd--;
 			break;
 		case 'f':
-			// Draw a flower
-			floractx.fillStyle = '#edd8e9';
-			floractx.strokeStyle = '#edd8e9';
-			for(var j = 0; j < 5; j++) {
-				// Draw 5 distinct petals
-				drawPetal(turtle);
-				turtle.state[2] += properties.angles[2];
-			}
+			// // Draw a flower
+			// floractx.fillStyle = '#edd8e9';
+			// floractx.strokeStyle = '#edd8e9';
+			// for(var j = 0; j < 5; j++) {
+			// 	// Draw 5 distinct petals
+			// 	drawPetal(turtle);
+			// 	turtle.state[2] += properties.angles[2];
+			// }
 
-			// Draw the center of the flower
-			floractx.beginPath();
-			floractx.fillStyle = '#e4097d';
-			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength / 3, 0, 2 * Math.PI, false);
-			floractx.fill();
-			floractx.closePath();
+			// // Draw the center of the flower
+			// floractx.beginPath();
+			// floractx.fillStyle = '#e4097d';
+			// floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength / 3, 0, 2 * Math.PI, false);
+			// floractx.fill();
+			// floractx.closePath();
 			break;
 		case 'l': 
-			floractx.fillStyle = 'green';
-			floractx.strokeStyle = 'darkgreen';
-			floractx.lineWidth = 2;
-			drawLeaf(turtle);
+			// floractx.fillStyle = 'green';
+			// floractx.strokeStyle = 'darkgreen';
+			// floractx.lineWidth = 2;
+			// drawLeaf(turtle);
 			break;
 		}
 	}
+
+	if (progress > stepsize * (properties.depth + 1)) {
+		properties.depth++;
+	}
+	else if(progress < stepsize * properties.depth) {
+		properties.depth--;
+	}
+
+	// (1/branches)
+
+	// Determine how many branches are on the current level
+
+
+
 };
+
+var branchCounter = function(sentence, depth) {
+	var cd = 0, branches = 0;
+
+	for (var i = 0; i < sentence.length; i++) {
+		switch(sentence.charAt(i)) {
+			case '[':
+				cd++;
+				break;
+			case ']':
+				cd--;
+				break;
+			case 'F':
+				if (cd == depth) {
+					branches++;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
+	return branches;
+}
+
 
 // Mathematical functions
 var avg = function(x, y, p) {
@@ -195,7 +267,7 @@ animationLoop = function(currentTime) {
 	properties.bWidth = 10;
 	properties.distance = 50;
 
-	progress += (inc ? 1 : -1) * sigmoid(totalElapsedTime) / 1000;
+	progress += (inc ? 1 : -1) * sigmoid(totalElapsedTime) / 500;
 
 	if(progress >= 0.99) {
 		inc ^= true;
@@ -209,7 +281,7 @@ animationLoop = function(currentTime) {
 		startingTime = currentTime;
 	}
 
-	console.log(Math.round(totalElapsedTime) + " : \t" + progress);
+	//console.log(Math.round(totalElapsedTime) + " : \t" + progress);
 
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
