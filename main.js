@@ -57,6 +57,7 @@ var newPlant = function() {
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
 	}
+	console.log(lsystem.sentence);
 }
 
 // Draws a petal at the current location
@@ -95,46 +96,30 @@ var plantRenderer = function(lsystem) {
 
 	//var percent = ((progress - (depth * stepsize)) / ((depth + 1) * stepsize)) % 1;
 	var percent = (progress - (properties.depth * stepsize)) / stepsize;
-	var cd = 0, cb = 0;
+	var cd = 0;
 
 
 	var branches = branchCounter(lsystem.sentence, properties.depth);
-	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
+	console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 
 	for(var i = 0; i < lsystem.sentence.length; i++) {
-
 		switch(lsystem.sentence.charAt(i)) {
 		case 'F':
 			plantctx.beginPath();
 			plantctx.lineWidth = properties.bWidth;
 			plantctx.strokeStyle = '#614126';
-			//console.log(cb);
 			
-			if (cd == properties.depth) {
-				//console.log(percent);
-				plantctx.moveTo(turtle.state[0], turtle.state[1]);
-				var x = turtle.state[0] + Math.cos(turtle.state[2]) * properties.distance * percent;
-				var y = turtle.state[1] + Math.sin(turtle.state[2]) * properties.distance * percent;
-				
-				cb++;
+			plantctx.moveTo(turtle.state[0], turtle.state[1]);
 
-				if (cb <= Math.floor(percent * branches)) {
-					turtle.state[0] = x;
-					turtle.state[1] = y;
-				}
-				// else {
-				// 	x += Math.cos(turtle.state[2]) / branches;
-				// 	y += Math.sin(turtle.state[2]) / branches;
-				// }
-				plantctx.lineTo(x, y);
+			if (cd == properties.depth) {
+				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance * percent;
+				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance * percent;
 			}
 			else if (cd <= properties.depth) {
-				plantctx.moveTo(turtle.state[0], turtle.state[1]);
 				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
 				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
-				plantctx.lineTo(turtle.state[0], turtle.state[1]);
 			}
-			
+			plantctx.lineTo(turtle.state[0], turtle.state[1]);
 			plantctx.stroke();
 			plantctx.closePath();
 			break;
