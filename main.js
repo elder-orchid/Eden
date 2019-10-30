@@ -1,6 +1,6 @@
 // Initialize global variables
 var bgcanv, plantcanv, floracanv, properties, lsystem, rules;
-
+var depth = 0, progress = 0;
 var initCanvas = function() {
 	// Initialize canvases
 	bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
@@ -31,6 +31,8 @@ var newPlant = function() {
 	floractx.clearRect(0, 0, floracanv.width, floracanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
+	floractx.globalAlpha = 0.7;
+
 	// Setup rules
 	rules = {
 		'F': new WeightedList({
@@ -44,15 +46,19 @@ var newPlant = function() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5]
+		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
+		// Passage of time
+		distance: 50,
+		petalLength: 15,
+		leafRadius: 40
 	};
 
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
-		properties.distance /= 1.4;
 	}
 }
 
+// Draws a petal at the current location
 var drawPetal = function(turtle) {
 	floractx.beginPath();
 	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength, properties.petalLength/4, turtle.state[2], 0, 2 * Math.PI, true);
@@ -61,8 +67,8 @@ var drawPetal = function(turtle) {
 	floractx.closePath();
 }
 
+// Draws a leaf at the current location
 var drawLeaf = function(turtle) {
-	floractx.globalAlpha = 0.7;
 	floractx.beginPath();
 	floractx.moveTo(turtle.state[0], turtle.state[1]);
 	floractx.bezierCurveTo(
@@ -74,7 +80,6 @@ var drawLeaf = function(turtle) {
 		turtle.state[1]);
 	floractx.fill();
 	floractx.closePath();
-	floractx.globalAlpha = 1;
 }
 
 // Plant renderer obj
@@ -83,8 +88,13 @@ var plantRenderer = function(lsystem) {
 		// Initial state
 		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
 	);
-	for(var i = 0; i < lsystem.sentence.length; i++){
-		
+
+	// percent growth of this layer
+	var stepsize = 1.0 / (maxIterations + 1);
+	var percent = (progress - (depth * stepsize)) / ((depth + 1) * stepsize);
+	var cd = 0;
+
+	for(var i = 0; i < lsystem.sentence.length; i++) {
 		switch(lsystem.sentence.charAt(i)) {
 		case 'F':
 			plantctx.beginPath();
@@ -106,19 +116,24 @@ var plantRenderer = function(lsystem) {
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
 			properties.bWidth *= 4/6;
+			properties.distance *= 1/1.1;
 			break;
 		case ']':
 			turtle.state = turtle.stack.pop();
 			properties.bWidth *= 6/4;
+			properties.distance *= 1.1;
 			break;
 		case 'f':
+			// Draw a flower
 			floractx.fillStyle = '#edd8e9';
 			floractx.strokeStyle = '#edd8e9';
 			for(var j = 0; j < 5; j++) {
+				// Draw 5 distinct petals
 				drawPetal(turtle);
 				turtle.state[2] += properties.angles[2];
 			}
 
+			// Draw the center of the flower
 			floractx.beginPath();
 			floractx.fillStyle = '#e4097d';
 			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength / 3, 0, 2 * Math.PI, false);
@@ -140,9 +155,8 @@ var avg = function(x, y, p) {
 	return Math.round(x * (1 - p) + y * p);
 }
 
-var k = 10;
 var sigmoid = function(x) {
-	return 1 / (1 + Math.pow(Math.E, -k * x));
+	return 1 / (1 + Math.pow(1.1, -x));
 }
 
 var sigprime = function(x) {
@@ -150,46 +164,52 @@ var sigprime = function(x) {
 }
 
 var animationLoop;
-
 (function(){
 var theta = 0;
 var dtheta = Math.PI/1000;
 var colors = [
-	[94, 53, 177], // Purple
-	[0, 0, 0], // Black
-
+	[94, 53, 177],  // Purple
+	[0, 0, 0], 		// Black
 	[255, 235, 59], // Yellow
 	[100, 181, 246] // Blue
 ];
 
-var progress = 0.01;
 var inc = true;
 
-animationLoop = function() {
-	// Modify angles
+var startingTime;
+var totalElapsedTime;
+
+animationLoop = function(currentTime) {
+	if(!startingTime){startingTime=currentTime;}
+	totalElapsedTime=(currentTime-startingTime);
+
+	// Wiggle the angle
 	theta += dtheta;
 	theta %= Math.PI * 2;
 	properties.angles[0] = (Math.sin(theta) + 4) / 10;
+
+	// Clear the canvases
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
-	properties.bWidth = 10;
-
-	// Passage of time
-	properties.distance = progress * 50;
-	properties.petalLength = progress * 15;
-	properties.leafRadius = progress * 40;
 	
-	progress += (inc ? 1 : -1) * sigprime(progress - .5) / 20;
+	properties.bWidth = 10;
+	properties.distance = 50;
 
-	if(progress >= 1) {
+	progress += (inc ? 1 : -1) * sigmoid(totalElapsedTime) / 1000;
+
+	if(progress >= 0.99) {
 		inc ^= true;
+		progress = 0.99;
+		startingTime = currentTime;
 	}
 	else if(progress < 0.01) {
 		newPlant();
 		inc ^= true;
+		progress = 0.01;
+		startingTime = currentTime;
 	}
 
-	console.log(progress);
+	console.log(Math.round(totalElapsedTime) + " : \t" + progress);
 
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
@@ -198,7 +218,7 @@ animationLoop = function() {
 	}
 
 	bgctx.fillStyle = grd;
-	bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
+	//bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
 
 	plantRenderer(lsystem);
 	requestAnimationFrame(animationLoop);
