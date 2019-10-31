@@ -50,8 +50,9 @@ var newPlant = function() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
+		angles: [25.7 * Math.PI/180, 15 * Math.PI/180],
 		// Passage of time
+		bWidth: 10,
 		distance: 50,
 		petalLength: 5,
 		leafLength: 20,
@@ -82,7 +83,6 @@ var colors = [
 ];
 
 var inc = true;
-
 var startingTime;
 var totalElapsedTime;
 
@@ -109,24 +109,19 @@ animationLoop = function(currentTime) {
 	// Clear the canvases
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
-	
-	properties.bWidth = 10;
-	properties.distance = 50;
 
 	var timeFactor = 50;
-
 	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / timeFactor));
-	//console.log((totalElapsedTime / timeFactor).toFixed(3) + " : \t" + progress);
-
+	
 	if(progress >= 0.999) {
 		inc ^= true;
-		progress = 0.9988;
+		progress = 0.998;
 		startingTime = currentTime;
 	}
 	else if(progress < 0.001) {
 		newPlant();
 		inc ^= true;
-		progress = 0.01;
+		progress = 0.002;
 		startingTime = currentTime;
 	}
 	// Create gradient

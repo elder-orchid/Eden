@@ -27,6 +27,12 @@ var drawLeaf = function(turtle, percent) {
 						   properties.leafLength * percent, 0);
 	floractx.fill();
 	floractx.closePath();
+
+	floractx.moveTo(0,0);
+	floractx.lineWidth = properties.leafLength / 40;
+	floractx.lineTo(properties.leafLength * percent, 0);
+	floractx.stroke();
+
 	floractx.restore();
 }
 
@@ -40,10 +46,8 @@ var plantRenderer = function(lsystem) {
 	var stepsize = 1.0 / (maxIterations);
 	var percent = Math.abs((progress - (properties.depth * stepsize)) / stepsize);
 	var cd = 0;
-	var branches = branchCounter(lsystem.sentence, properties.depth);
 	var leafsize;
 	var factors = [0.66, 0.9, 1.25, 1.4];
-	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 
 	for(var i = 0; i < lsystem.sentence.length; i++) {
 		leafsize = 0;
@@ -56,14 +60,19 @@ var plantRenderer = function(lsystem) {
 			plantctx.lineWidth = properties.bWidth;
 			plantctx.strokeStyle = '#614126';
 			plantctx.moveTo(turtle.state[0], turtle.state[1]);
-			if (cd == properties.depth) {
-				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance * percent;
-				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance * percent;
+			var x = Math.cos(turtle.state[2]) * properties.distance;
+			var y = Math.sin(turtle.state[2]) * properties.distance;
+
+			if (cd == properties.depth) { 
+				x *= percent;
+				y *= percent;
 			}
-			else if (cd < properties.depth) {
-				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
-				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
+
+			if (cd <= properties.depth) {
+				turtle.state[0] += x;
+				turtle.state[1] += y;
 			}
+
 			plantctx.lineTo(turtle.state[0], turtle.state[1]);
 			plantctx.stroke();
 			plantctx.closePath();
@@ -92,12 +101,13 @@ var plantRenderer = function(lsystem) {
 			break;
 		case 'f':
 			// Draw a flower
+			var petals = 5;
 			floractx.fillStyle = '#edd8e9';
 			floractx.strokeStyle = '#edd8e9';
-			for(var j = 0; j < 5; j++) {
+			for(var j = 0; j < petals; j++) {
 				// Draw 5 distinct petals
 				drawPetal(turtle, leafsize);
-				turtle.state[2] += properties.angles[2];
+				turtle.state[2] += Math.PI * 2 / petals;
 			}
 
 			// Draw the center of the flower
@@ -110,7 +120,6 @@ var plantRenderer = function(lsystem) {
 		case 'l': 
 			floractx.fillStyle = 'green';
 			floractx.strokeStyle = 'darkgreen';
-			floractx.lineWidth = 2;
 			drawLeaf(turtle, leafsize);
 			break;
 		}
@@ -122,27 +131,3 @@ var plantRenderer = function(lsystem) {
 		properties.depth--;
 	}
 };
-
-var branchCounter = function(sentence, depth) {
-	var cd = 0, branches = 0;
-
-	for (var i = 0; i < sentence.length; i++) {
-		switch(sentence.charAt(i)) {
-			case '[':
-				cd++;
-				break;
-			case ']':
-				cd--;
-				break;
-			case 'F':
-				if (cd == depth) {
-					branches++;
-				}
-				break;
-			default:
-				break;
-		}
-	}
-
-	return branches;
-}
