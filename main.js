@@ -53,8 +53,8 @@ var newPlant = function() {
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180, Math.PI * 2/5],
 		// Passage of time
 		distance: 50,
-		petalLength: 15,
-		leafRadius: 40,
+		petalLength: 5,
+		leafLength: 10,
 		depth: 0
 	};
 
@@ -117,7 +117,7 @@ animationLoop = function(currentTime) {
 	properties.bWidth = 10;
 	properties.distance = 50;
 
-	var timeFactor = 100;
+	var timeFactor = 50;
 
 	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / timeFactor));
 	//console.log((totalElapsedTime / timeFactor).toFixed(3) + " : \t" + progress);

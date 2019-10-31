@@ -9,17 +9,25 @@ var drawPetal = function(turtle, percent) {
 
 // Draws a leaf at the current location
 var drawLeaf = function(turtle, percent) {
+	floractx.save();
+	
+
+	var leafWidth = properties.leafLength / 2 * percent;
+
 	floractx.beginPath();
-	floractx.moveTo(turtle.state[0], turtle.state[1]);
-	floractx.bezierCurveTo(
-		turtle.state[0] - properties.leafRadius * percent + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * percent, 
-		turtle.state[0] + properties.leafRadius * percent + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * percent,
-		turtle.state[0], 
-		turtle.state[1]);
+	floractx.translate(turtle.state[0], turtle.state[1]);
+	floractx.rotate(turtle.state[2]);
+	floractx.moveTo(0,0);
+	floractx.bezierCurveTo(properties.leafLength / 4 * percent, leafWidth / 2 * percent, 
+						   properties.leafLength / 2 * percent, leafWidth / 2 * percent,
+						   properties.leafLength * percent, 0);
+	floractx.moveTo(0,0);
+	floractx.bezierCurveTo(properties.leafLength / 4 * percent, -leafWidth / 2 * percent,
+						   properties.leafLength / 2 * percent, -leafWidth / 2 * percent, 
+						   properties.leafLength * percent, 0);
 	floractx.fill();
 	floractx.closePath();
+	floractx.restore();
 }
 
 // Plant renderer obj
@@ -34,6 +42,7 @@ var plantRenderer = function(lsystem) {
 	var cd = 0;
 	var branches = branchCounter(lsystem.sentence, properties.depth);
 	var leafsize;
+	var factors = [1.5, 1.1, 0.7, 0.7];
 	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 
 	for(var i = 0; i < lsystem.sentence.length; i++) {
@@ -67,14 +76,18 @@ var plantRenderer = function(lsystem) {
 			break;
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth *= 4/6;
-			properties.distance *= 1/1.1;
+			properties.bWidth /= factors[0];
+			properties.distance /= factors[1];
+			properties.leafLength /= factors[2];
+			properties.petalLength /= factors[3];
 			cd++;
 			break;
 		case ']':
 			turtle.state = turtle.stack.pop();
-			properties.bWidth *= 6/4;
-			properties.distance *= 1.1;
+			properties.bWidth *= factors[0];
+			properties.distance *= factors[1];
+			properties.leafLength *= factors[2];
+			properties.petalLength *= factors[3];
 			cd--;
 			break;
 		case 'f':
