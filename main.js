@@ -57,7 +57,6 @@ var newPlant = function() {
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
 	}
-	console.log(lsystem.sentence);
 }
 
 // Draws a petal at the current location
@@ -91,26 +90,18 @@ var plantRenderer = function(lsystem) {
 		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
 	);
 
-	// percent growth of this layer
 	var stepsize = 1.0 / (maxIterations + 1);
-
-	//var percent = ((progress - (depth * stepsize)) / ((depth + 1) * stepsize)) % 1;
 	var percent = (progress - (properties.depth * stepsize)) / stepsize;
 	var cd = 0;
-
-
 	var branches = branchCounter(lsystem.sentence, properties.depth);
-	console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
-
+	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 	for(var i = 0; i < lsystem.sentence.length; i++) {
 		switch(lsystem.sentence.charAt(i)) {
 		case 'F':
 			plantctx.beginPath();
 			plantctx.lineWidth = properties.bWidth;
 			plantctx.strokeStyle = '#614126';
-			
 			plantctx.moveTo(turtle.state[0], turtle.state[1]);
-
 			if (cd == properties.depth) {
 				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance * percent;
 				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance * percent;
@@ -166,20 +157,12 @@ var plantRenderer = function(lsystem) {
 			break;
 		}
 	}
-
 	if (progress > stepsize * (properties.depth + 1)) {
 		properties.depth++;
 	}
 	else if(progress < stepsize * properties.depth) {
 		properties.depth--;
 	}
-
-	// (1/branches)
-
-	// Determine how many branches are on the current level
-
-
-
 };
 
 var branchCounter = function(sentence, depth) {
