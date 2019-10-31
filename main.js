@@ -1,6 +1,10 @@
 // Initialize global variables
-var bgcanv, plantcanv, floracanv, properties, lsystem, rules;
+var bgcanv, plantcanv, floracanv, properties, lsystem, rules, audio;
 var progress = 0;
+
+var w = window.innerWidth,
+	h = window.innerHeight;
+
 var initCanvas = function() {
 	// Initialize canvases
 	bgcanv = document.getElementById("bgcanv"), bgctx = bgcanv.getContext("2d");
@@ -8,16 +12,16 @@ var initCanvas = function() {
 	floracanv = document.getElementById("floracanv"), floractx = floracanv.getContext("2d");
 
 	// Set dimensions to fullscreen
-	bgcanv.width = window.innerWidth;
-	bgcanv.height = window.innerHeight;
+	bgcanv.width = w;
+	bgcanv.height = h;
 
-	plantcanv.width = window.innerWidth;
-	plantcanv.height = window.innerHeight;
+	plantcanv.width = w;
+	plantcanv.height = h;
 
-	floracanv.width = window.innerWidth;
-	floracanv.height = window.innerHeight;
+	floracanv.width = w;
+	floracanv.height = h;
 
-	var audio = new Audio('assets/eden.mp3');
+	audio = new Audio('assets/eden.mp3');
 	audio.addEventListener('ended', function() {
 	    this.currentTime = 0;
 	    this.play();
@@ -59,169 +63,16 @@ var newPlant = function() {
 	}
 }
 
-// Draws a petal at the current location
-var drawPetal = function(turtle, percent) {
-	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength * percent, properties.petalLength * percent/4, turtle.state[2], 0, 2 * Math.PI, true);
-	floractx.fill();
-	floractx.stroke();
-	floractx.closePath();
-}
-
-// Draws a leaf at the current location
-var drawLeaf = function(turtle, percent) {
-	floractx.beginPath();
-	floractx.moveTo(turtle.state[0], turtle.state[1]);
-	floractx.bezierCurveTo(
-		turtle.state[0] - properties.leafRadius * percent + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * percent, 
-		turtle.state[0] + properties.leafRadius * percent + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * percent,
-		turtle.state[0], 
-		turtle.state[1]);
-	floractx.fill();
-	floractx.closePath();
-}
-
-// Plant renderer obj
-var plantRenderer = function(lsystem) {
-	var turtle = new Turtle(
-		// Initial state
-		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
-	);
-
-	var stepsize = 1.0 / (maxIterations + 1);
-	var percent = Math.abs((progress - (properties.depth * stepsize)) / stepsize);
-	var cd = 0;
-	var branches = branchCounter(lsystem.sentence, properties.depth);
-	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
-
-	for(var i = 0; i < lsystem.sentence.length; i++) {
-		switch(lsystem.sentence.charAt(i)) {
-		case 'F':
-			plantctx.beginPath();
-			plantctx.lineWidth = properties.bWidth;
-			plantctx.strokeStyle = '#614126';
-			plantctx.moveTo(turtle.state[0], turtle.state[1]);
-			if (cd == properties.depth) {
-				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance * percent;
-				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance * percent;
-			}
-			else if (cd < properties.depth) {
-				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
-				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
-			}
-			plantctx.lineTo(turtle.state[0], turtle.state[1]);
-			plantctx.stroke();
-			plantctx.closePath();
-			break;
-		case '-':
-			turtle.state[2] += properties.angles[0];
-			break; 
-		case '+':
-			turtle.state[2] -= properties.angles[1];
-			break;
-		case '[':
-			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth *= 4/6;
-			properties.distance *= 1/1.1;
-			cd++;
-			break;
-		case ']':
-			turtle.state = turtle.stack.pop();
-			properties.bWidth *= 6/4;
-			properties.distance *= 1.1;
-			cd--;
-			break;
-		case 'f':
-			var leafsize = 0;
-			if (cd < properties.depth) {
-				leafsize = 1;
-			}
-			else if (cd == properties.depth) {
-				leafsize = percent;
-			}
-
-			// Draw a flower
-			floractx.fillStyle = '#edd8e9';
-			floractx.strokeStyle = '#edd8e9';
-			for(var j = 0; j < 5; j++) {
-				// Draw 5 distinct petals
-				drawPetal(turtle, leafsize);
-				turtle.state[2] += properties.angles[2];
-			}
-
-			// Draw the center of the flower
-			floractx.beginPath();
-			floractx.fillStyle = '#e4097d';
-			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength * leafsize / 3, 0, 2 * Math.PI, false);
-			floractx.fill();
-			floractx.closePath();
-			break;
-		case 'l': 
-			var leafsize = 0;
-			if (cd < properties.depth) {
-				leafsize = 1;
-			}
-			else if (cd == properties.depth) {
-				leafsize = percent;
-			}
-
-
-			floractx.fillStyle = 'green';
-			floractx.strokeStyle = 'darkgreen';
-			floractx.lineWidth = 2;
-			drawLeaf(turtle, leafsize);
-			break;
-		}
-	}
-	if (progress > stepsize * (properties.depth + 1)) {
-		properties.depth++;
-	}
-	else if(progress < stepsize * properties.depth) {
-		properties.depth--;
-	}
-};
-
-var branchCounter = function(sentence, depth) {
-	var cd = 0, branches = 0;
-
-	for (var i = 0; i < sentence.length; i++) {
-		switch(sentence.charAt(i)) {
-			case '[':
-				cd++;
-				break;
-			case ']':
-				cd--;
-				break;
-			case 'F':
-				if (cd == depth) {
-					branches++;
-				}
-				break;
-			default:
-				break;
-		}
-	}
-
-	return branches;
-}
-
-
 // Mathematical functions
 var avg = function(x, y, p) {
 	return Math.round(x * (1 - p) + y * p);
 }
 
 var sigmoid = function(x) {
-	return 1 / (1 + Math.pow(1.1, -x));
+	return 1 / (1 + Math.pow(1.1, -(x-60)));
 }
 
-var sigprime = function(x) {
-	return sigmoid(x) * (1 - sigmoid(x));
-}
-
-var animationLoop;
+var animationLoop, clicker;
 (function(){
 var theta = 0;
 var dtheta = Math.PI/1000;
@@ -241,6 +92,19 @@ animationLoop = function(currentTime) {
 	if(!startingTime){startingTime=currentTime;}
 	totalElapsedTime=(currentTime-startingTime);
 
+	clicker = function() {
+		console.log("clicked");
+		
+		if (audio.paused) {
+			audio.play();
+		}
+
+		newPlant();
+		inc = true;
+		progress = 0.01;
+		startingTime = currentTime;
+	}
+
 	// Wiggle the angle
 	theta += dtheta;
 	theta %= Math.PI * 2;
@@ -253,26 +117,30 @@ animationLoop = function(currentTime) {
 	properties.bWidth = 10;
 	properties.distance = 50;
 
-	progress += (inc ? 1 : -1) * sigmoid(totalElapsedTime) / 500;
+	var timeFactor = 100;
 
-	if(progress >= 0.99) {
+	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / timeFactor));
+	//console.log((totalElapsedTime / timeFactor).toFixed(3) + " : \t" + progress);
+
+	console.log("ct: " + currentTime);
+	if(progress >= 0.999) {
 		inc ^= true;
-		progress = 0.99;
+		progress = 0.9988;
 		startingTime = currentTime;
 	}
-	else if(progress < 0.01) {
+	else if(progress < 0.001) {
 		newPlant();
 		inc ^= true;
 		progress = 0.01;
 		startingTime = currentTime;
 	}
-
-	//console.log(Math.round(totalElapsedTime) + " : \t" + progress);
-
 	// Create gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
 	for(var i = 0; i < 2; i++) {
-		grd.addColorStop(i, "rgb(" + avg(colors[i][0], colors[2+i][0], progress) + "," + avg(colors[i][1], colors[2+i][1], progress) + "," + avg(colors[i][2], colors[2+i][2], progress) + ")");
+		grd.addColorStop(i, "rgb(" + 
+			avg(colors[i][0], colors[2+i][0], progress) + "," + 
+			avg(colors[i][1], colors[2+i][1], progress) + "," + 
+			avg(colors[i][2], colors[2+i][2], progress) + ")");
 	}
 
 	bgctx.fillStyle = grd;
@@ -280,5 +148,8 @@ animationLoop = function(currentTime) {
 
 	plantRenderer(lsystem);
 	requestAnimationFrame(animationLoop);
-}	
+}
+
+
+
 })();
