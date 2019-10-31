@@ -63,7 +63,7 @@ var newPlant = function() {
 // Draws a petal at the current location
 var drawPetal = function(turtle) {
 	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength, properties.petalLength/4, turtle.state[2], 0, 2 * Math.PI, true);
+	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength * progress, properties.petalLength * progress/4, turtle.state[2], 0, 2 * Math.PI, true);
 	floractx.fill();
 	floractx.stroke();
 	floractx.closePath();
@@ -74,10 +74,10 @@ var drawLeaf = function(turtle) {
 	floractx.beginPath();
 	floractx.moveTo(turtle.state[0], turtle.state[1]);
 	floractx.bezierCurveTo(
-		turtle.state[0] - properties.leafRadius + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius, 
-		turtle.state[0] + properties.leafRadius + Math.cos(turtle.state[2]), 
-		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius,
+		turtle.state[0] - properties.leafRadius * progress + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * progress, 
+		turtle.state[0] + properties.leafRadius * progress + Math.cos(turtle.state[2]), 
+		turtle.state[1] + Math.sin(turtle.state[2]) * properties.leafRadius * progress,
 		turtle.state[0], 
 		turtle.state[1]);
 	floractx.fill();
@@ -115,7 +115,7 @@ var plantRenderer = function(lsystem) {
 				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance * percent;
 				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance * percent;
 			}
-			else if (cd <= properties.depth) {
+			else if (cd < properties.depth) {
 				turtle.state[0] += Math.cos(turtle.state[2]) * properties.distance;
 				turtle.state[1] += Math.sin(turtle.state[2]) * properties.distance;
 			}
@@ -142,27 +142,27 @@ var plantRenderer = function(lsystem) {
 			cd--;
 			break;
 		case 'f':
-			// // Draw a flower
-			// floractx.fillStyle = '#edd8e9';
-			// floractx.strokeStyle = '#edd8e9';
-			// for(var j = 0; j < 5; j++) {
-			// 	// Draw 5 distinct petals
-			// 	drawPetal(turtle);
-			// 	turtle.state[2] += properties.angles[2];
-			// }
+			// Draw a flower
+			floractx.fillStyle = '#edd8e9';
+			floractx.strokeStyle = '#edd8e9';
+			for(var j = 0; j < 5; j++) {
+				// Draw 5 distinct petals
+				drawPetal(turtle);
+				turtle.state[2] += properties.angles[2];
+			}
 
-			// // Draw the center of the flower
-			// floractx.beginPath();
-			// floractx.fillStyle = '#e4097d';
-			// floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength / 3, 0, 2 * Math.PI, false);
-			// floractx.fill();
-			// floractx.closePath();
+			// Draw the center of the flower
+			floractx.beginPath();
+			floractx.fillStyle = '#e4097d';
+			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength * progress / 3, 0, 2 * Math.PI, false);
+			floractx.fill();
+			floractx.closePath();
 			break;
 		case 'l': 
-			// floractx.fillStyle = 'green';
-			// floractx.strokeStyle = 'darkgreen';
-			// floractx.lineWidth = 2;
-			// drawLeaf(turtle);
+			floractx.fillStyle = 'green';
+			floractx.strokeStyle = 'darkgreen';
+			floractx.lineWidth = 2;
+			drawLeaf(turtle);
 			break;
 		}
 	}
@@ -275,7 +275,7 @@ animationLoop = function(currentTime) {
 	}
 
 	bgctx.fillStyle = grd;
-	//bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
+	bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
 
 	plantRenderer(lsystem);
 	requestAnimationFrame(animationLoop);
