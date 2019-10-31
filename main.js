@@ -1,9 +1,19 @@
-// Initialize global variables
-var bgcanv, plantcanv, floracanv, properties, lsystem, rules, audio;
-var progress = 0;
+/*
+Written by Nicolas Gonzalez.
 
-var w = window.innerWidth,
-	h = window.innerHeight;
+This code was written in an attempt to model the random growth patterns of trees!
+
+For further reference on the concepts being implemented here, be sure to check out:
+http://algorithmicbotany.org/papers/#abop
+The Algorithmic Beauty of Plants is an incredible book and was my inspiration for this project.
+*/
+
+// Instantiate / initialize global variables
+var bgcanv, plantcanv, floracanv, properties, lsystem, rules, audio;
+
+var progress = 0;
+var w = window.innerWidth;
+var h = window.innerHeight;
 
 var initCanvas = function() {
 	// Initialize canvases
@@ -21,12 +31,29 @@ var initCanvas = function() {
 	floracanv.width = w;
 	floracanv.height = h;
 
+	floractx.globalAlpha = 0.7;
+
+	// Load in the audio. If the audio can't be played, 
+	// the user can start it by clicking the screen.
 	audio = new Audio('assets/eden.mp3');
 	audio.addEventListener('ended', function() {
 	    this.currentTime = 0;
 	    this.play();
 	}, false);
-	audio.play();
+	var playPromise = audio.play();
+
+	if (playPromise !== undefined) {
+		playPromise.then(_ => {
+			console.log("audio autoplayed successfully.");
+			// Automatic playback started!
+		})
+		.catch(error => {
+			console.log("audio error!");
+			// Auto-play was prevented
+		});
+	}
+
+	// Create a new plant and start the loop!
 	newPlant();
 	requestAnimationFrame(animationLoop);
 }
@@ -35,9 +62,7 @@ var newPlant = function() {
 	floractx.clearRect(0, 0, floracanv.width, floracanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
-	floractx.globalAlpha = 0.7;
-
-	// Setup rules
+	// Creates the set of rules for our lsystem
 	rules = {
 		'F': new WeightedList({
 			'F[-F+F][+Fl]': .33, 
@@ -50,8 +75,8 @@ var newPlant = function() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
+		// Properties of the plant. These properties are modified as we go
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180],
-		// Passage of time
 		bWidth: 10,
 		distance: 50,
 		petalLength: 5,
@@ -73,9 +98,9 @@ var sigmoid = function(x) {
 	return 1 / (1 + Math.pow(1.1, -(x-60)));
 }
 
-var animationLoop, clicker;
+var animationLoop;
 (function(){
-var colors = [
+var bgcolors = [
 	[94, 53, 177],  // Purple
 	[0, 0, 0], 		// Black
 	[255, 235, 59], // Yellow
@@ -110,9 +135,10 @@ animationLoop = function(currentTime) {
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
-	var timeFactor = 50;
-	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / timeFactor));
+	// This variable denotes our overall tree growth on a scale of 0 to 1.
+	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / 50));
 	
+	// In order to grow and then shrink, we have to oscliate our values.
 	if(progress >= 0.999) {
 		inc ^= true;
 		progress = 0.998;
@@ -124,19 +150,24 @@ animationLoop = function(currentTime) {
 		progress = 0.002;
 		startingTime = currentTime;
 	}
-	// Create gradient
+
+	// Create the background gradient
 	var grd = bgctx.createLinearGradient(0, 0, 0, bgcanv.height);
 	for(var i = 0; i < 2; i++) {
 		grd.addColorStop(i, "rgb(" + 
-			avg(colors[i][0], colors[2+i][0], progress) + "," + 
-			avg(colors[i][1], colors[2+i][1], progress) + "," + 
-			avg(colors[i][2], colors[2+i][2], progress) + ")");
+			avg(bgcolors[i][0], bgcolors[2+i][0], progress) + "," + 
+			avg(bgcolors[i][1], bgcolors[2+i][1], progress) + "," + 
+			avg(bgcolors[i][2], bgcolors[2+i][2], progress) + ")");
 	}
 
 	bgctx.fillStyle = grd;
 	bgctx.fillRect(0, 0, bgcanv.width, bgcanv.height);
 
+	// Render the plant
 	plantRenderer(lsystem);
+
+	// Render the moon
+	luna();
 	requestAnimationFrame(animationLoop);
 }
 
