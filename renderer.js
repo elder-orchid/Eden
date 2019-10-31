@@ -42,7 +42,7 @@ var plantRenderer = function(lsystem) {
 	var cd = 0;
 	var branches = branchCounter(lsystem.sentence, properties.depth);
 	var leafsize;
-	var factors = [1.5, 1.1, 0.7, 0.7];
+	var factors = [0.66, 0.9, 1.25, 1.4];
 	//console.log("depth: " + properties.depth + ", percent: " + percent + ", branches: " + branches + ", branch: " + Math.floor(percent * branches));
 
 	for(var i = 0; i < lsystem.sentence.length; i++) {
@@ -76,18 +76,18 @@ var plantRenderer = function(lsystem) {
 			break;
 		case '[':
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth /= factors[0];
-			properties.distance /= factors[1];
-			properties.leafLength /= factors[2];
-			properties.petalLength /= factors[3];
-			cd++;
-			break;
-		case ']':
-			turtle.state = turtle.stack.pop();
 			properties.bWidth *= factors[0];
 			properties.distance *= factors[1];
 			properties.leafLength *= factors[2];
 			properties.petalLength *= factors[3];
+			cd++;
+			break;
+		case ']':
+			turtle.state = turtle.stack.pop();
+			properties.bWidth /= factors[0];
+			properties.distance /= factors[1];
+			properties.leafLength /= factors[2];
+			properties.petalLength /= factors[3];
 			cd--;
 			break;
 		case 'f':

@@ -54,7 +54,7 @@ var newPlant = function() {
 		// Passage of time
 		distance: 50,
 		petalLength: 5,
-		leafLength: 10,
+		leafLength: 20,
 		depth: 0
 	};
 
@@ -74,8 +74,6 @@ var sigmoid = function(x) {
 
 var animationLoop, clicker;
 (function(){
-var theta = 0;
-var dtheta = Math.PI/1000;
 var colors = [
 	[94, 53, 177],  // Purple
 	[0, 0, 0], 		// Black
@@ -106,10 +104,8 @@ animationLoop = function(currentTime) {
 	}
 
 	// Wiggle the angle
-	theta += dtheta;
-	theta %= Math.PI * 2;
-	properties.angles[0] = (Math.sin(theta) + 4) / 10;
-
+	properties.angles[0] = (Math.cos(progress * Math.PI * 2) + 4) / 10;
+	properties.angles[1] = (Math.sin(progress * Math.PI * 2) + 4) / 10;
 	// Clear the canvases
 	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
@@ -122,7 +118,6 @@ animationLoop = function(currentTime) {
 	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / timeFactor));
 	//console.log((totalElapsedTime / timeFactor).toFixed(3) + " : \t" + progress);
 
-	console.log("ct: " + currentTime);
 	if(progress >= 0.999) {
 		inc ^= true;
 		progress = 0.9988;
