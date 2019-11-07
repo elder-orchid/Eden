@@ -1,10 +1,39 @@
-// Draws a petal at the current location
-var drawPetal = function(turtle, percent) {
-	floractx.beginPath();
-	floractx.ellipse(turtle.state[0], turtle.state[1], properties.petalLength * percent, properties.petalLength * percent/4, turtle.state[2], 0, 2 * Math.PI, true);
-	floractx.fill();
-	floractx.stroke();
-	floractx.closePath();
+// Draws a flower at the current location
+var drawFlower = function(turtle, percent) {
+	console.log("drawing to the leafCanv");
+
+	const canv = document.createElement('canvas');
+
+	canv.width = properties.petalLength * 2;
+	canv.height = properties.petalLength * 2;
+	const ctx = canv.getContext('2d');
+
+	// Draw a flower
+	var petals = 5;
+	var angle = 0;
+	ctx.fillStyle = '#edd8e9';
+	ctx.strokeStyle = '#edd8e9';
+
+	ctx.translate(canv.width / 2, canv.height / 2);
+
+	for(var j = 0; j < petals; j++) {
+		// Draw 5 distinct petals
+		ctx.beginPath();
+		ctx.ellipse(0, 0, properties.petalLength, properties.petalLength / 4, angle, 0, 2 * Math.PI, true);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+		angle += Math.PI * 2 / petals;
+	}
+
+	// Draw the center of the flower
+	ctx.beginPath();
+	ctx.fillStyle = '#e4097d';
+	ctx.arc(0, 0, properties.petalLength / 3, 0, 2 * Math.PI, false);
+	ctx.fill();
+	ctx.closePath();
+
+	return canv;
 }
 
 // Draws a leaf at the current location
@@ -122,27 +151,18 @@ var plantRenderer = function(lsystem) {
 			cd--;
 			break;
 		case 'f':
-			// Draw a flower
-			var petals = 5;
-			floractx.fillStyle = '#edd8e9';
-			floractx.strokeStyle = '#edd8e9';
-			for(var j = 0; j < petals; j++) {
-				// Draw 5 distinct petals
-				drawPetal(turtle, leafsize);
-				turtle.state[2] += Math.PI * 2 / petals;
-			}
+			var factor = leafsize / 20 * ((cd+1) * 1.4);
+			floractx.save();
 
-			// Draw the center of the flower
-			floractx.beginPath();
-			floractx.fillStyle = '#e4097d';
-			floractx.arc(turtle.state[0], turtle.state[1], properties.petalLength * leafsize / 3, 0, 2 * Math.PI, false);
-			floractx.fill();
-			floractx.closePath();
+			floractx.translate(turtle.state[0], turtle.state[1]);
+			floractx.translate(-preFlower.width / 2 * factor, -preFlower.height / 2 * factor);
+
+			floractx.drawImage(preFlower, 0, 0,  preFlower.width * factor, preFlower.height * factor);
+			floractx.restore();
 			break;
 		case 'l':
 			var factor = leafsize / 20 * ((cd+1) * 1.25);
 			floractx.save();
-			floractx.beginPath();
 
 			floractx.translate(turtle.state[0], turtle.state[1]);
 			floractx.rotate(turtle.state[2]);
@@ -150,7 +170,6 @@ var plantRenderer = function(lsystem) {
 			
 			floractx.drawImage(preLeaf, 0, 0,  preLeaf.width * factor, preLeaf.height * factor);
 
-			floractx.closePath();
 			floractx.restore();
 			break;
 		}
