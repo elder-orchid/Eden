@@ -10,6 +10,7 @@ The Algorithmic Beauty of Plants is an incredible book and was my inspiration fo
 
 // Instantiate / initialize global variables
 var bgcanv, plantcanv, floracanv, properties, lsystem, rules, audio;
+var preLeaf;
 
 var progress = 0;
 var w = window.innerWidth;
@@ -55,6 +56,7 @@ var initCanvas = function() {
 
 	// Create a new plant and start the loop!
 	newPlant();
+	preLeaf = drawLeaf();
 	requestAnimationFrame(animationLoop);
 }
 
@@ -80,7 +82,7 @@ var newPlant = function() {
 		bWidth: 10,
 		distance: 50,
 		petalLength: 5,
-		leafLength: 20,
+		leafLength: 200,
 		depth: 0
 	};
 
@@ -168,6 +170,9 @@ animationLoop = function(currentTime) {
 
 	// Render the moon
 	luna();
+
+
+
 	requestAnimationFrame(animationLoop);
 }
 

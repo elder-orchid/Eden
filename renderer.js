@@ -9,37 +9,42 @@ var drawPetal = function(turtle, percent) {
 
 // Draws a leaf at the current location
 var drawLeaf = function(turtle, percent) {
-	// Save the state so our transformations are not permanent
-	floractx.save();
-	
-	// Get into position and rotate
-	floractx.translate(turtle.state[0], turtle.state[1]);
-	floractx.rotate(turtle.state[2]);
+	console.log("drawing to the leafCanv");
 
+	const canv = document.createElement('canvas');
+
+	canv.width = properties.leafLength;
+	canv.height = properties.leafLength / 2;
+	const ctx = canv.getContext('2d');
+
+
+	// Draw a leaf
+	ctx.fillStyle = 'green';
+	ctx.strokeStyle = 'darkgreen';
 	// Find the width, dependent on the length
-	var leafWidth = properties.leafLength / 2 * percent;
 
 	// Each bezier curve is half of the leaf
-	floractx.beginPath();
-	floractx.moveTo(0,0);
-	floractx.bezierCurveTo(properties.leafLength / 4 * percent, leafWidth / 2 * percent, 
-						   properties.leafLength / 2 * percent, leafWidth / 2 * percent,
-						   properties.leafLength * percent, 0);
-	floractx.moveTo(0,0);
-	floractx.bezierCurveTo(properties.leafLength / 4 * percent, -leafWidth / 2 * percent,
-						   properties.leafLength / 2 * percent, -leafWidth / 2 * percent, 
-						   properties.leafLength * percent, 0);
-	floractx.fill();
-	floractx.closePath();
+	ctx.beginPath();
+	ctx.translate(0, canv.height / 2);
+	ctx.moveTo(0,0);
+	ctx.bezierCurveTo(canv.width / 4, canv.height / 2, 
+					  canv.width / 2, canv.height / 2,
+					  canv.width / 1, 0);
+	ctx.moveTo(0,0);
+	ctx.bezierCurveTo(canv.width / 4, -canv.height / 2,
+					  canv.width / 2, -canv.height / 2, 
+					  canv.width / 1, 0);
+	ctx.fill();
+	ctx.translate(0, -canv.height / 2);
+	ctx.closePath();
 
 	// Draw a line through the leaf and outline the whole shape
-	floractx.moveTo(0,0);
-	floractx.lineWidth = properties.leafLength / 40;
-	floractx.lineTo(properties.leafLength * percent, 0);
-	floractx.stroke();
+	ctx.moveTo(0,0);
+	ctx.lineWidth = properties.leafLength / 40;
+	ctx.lineTo(properties.leafLength * percent, 0);
+	ctx.stroke();
 
-	// Restore the ctx to its original state
-	floractx.restore();
+	return canv;
 }
 
 // Plant renderer obj
@@ -135,10 +140,18 @@ var plantRenderer = function(lsystem) {
 			floractx.closePath();
 			break;
 		case 'l':
-			// Draw a leaf
-			floractx.fillStyle = 'green';
-			floractx.strokeStyle = 'darkgreen';
-			drawLeaf(turtle, leafsize);
+			var factor = leafsize / 20 * ((cd+1) * 1.25);
+			floractx.save();
+			floractx.beginPath();
+
+			floractx.translate(turtle.state[0], turtle.state[1]);
+			floractx.rotate(turtle.state[2]);
+			floractx.translate(0, -preLeaf.height / 2 * factor);
+			
+			floractx.drawImage(preLeaf, 0, 0,  preLeaf.width * factor, preLeaf.height * factor);
+
+			floractx.closePath();
+			floractx.restore();
 			break;
 		}
 	}
