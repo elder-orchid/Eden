@@ -91,8 +91,7 @@ var plantRenderer = function(lsystem) {
 	var leafsize;
 	var stepsize = 1.0 / (maxIterations);
 	var percent = Math.abs((progress - (properties.depth * stepsize)) / stepsize);
-	var cd = 0;
-	var factors = [0.66, 0.9, 1.25, 1.2];
+	var cd = 0.0;
 
 	// Iterate through every character in the L-System
 	for(var i = 0; i < lsystem.sentence.length; i++) {
@@ -107,11 +106,11 @@ var plantRenderer = function(lsystem) {
 		case 'F':
 			// Draw a branch
 			plantctx.beginPath();
-			plantctx.lineWidth = properties.bWidth;
+			plantctx.lineWidth = properties.bWidth * Math.pow(properties.factors[0], cd);
 			plantctx.strokeStyle = '#614126';
 			plantctx.moveTo(turtle.state[0], turtle.state[1]);
-			var x = Math.cos(turtle.state[2]) * properties.distance;
-			var y = Math.sin(turtle.state[2]) * properties.distance;
+			var x = Math.cos(turtle.state[2]) * properties.distance * Math.pow(properties.factors[1], cd);
+			var y = Math.sin(turtle.state[2]) * properties.distance * Math.pow(properties.factors[1], cd);
 
 			// If we are currently growing this branch, use percent.
 			if (cd == properties.depth) { 
@@ -140,19 +139,15 @@ var plantRenderer = function(lsystem) {
 		case '[':
 			// Move down a layer
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
-			properties.bWidth *= factors[0];
-			properties.distance *= factors[1];
 			cd++;
 			break;
 		case ']':
 			// Move up a layer
 			turtle.state = turtle.stack.pop();
-			properties.bWidth /= factors[0];
-			properties.distance /= factors[1];
 			cd--;
 			break;
 		case 'f':
-			var factor = leafsize / 10 * (cd * factors[3]);
+			var factor = leafsize / 7 * Math.pow(properties.factors[3], cd);
 			floractx.save();
 			floractx.beginPath();
 
@@ -165,7 +160,7 @@ var plantRenderer = function(lsystem) {
 			floractx.restore();
 			break;
 		case 'l':
-			var factor = leafsize / 15 * (cd * factors[2]);
+			var factor = leafsize / 10 * Math.pow(properties.factors[2], cd);
 			floractx.save();
 			floractx.beginPath();
 

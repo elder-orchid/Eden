@@ -84,7 +84,8 @@ var newPlant = function() {
 		distance: 50,
 		petalLength: 50,
 		leafLength: 200,
-		depth: 0
+		depth: 0,
+		factors: [0.66, 0.9, 1.25, 1.2]
 	};
 
 	for(var i = 0; i < maxIterations; i++) {
@@ -143,7 +144,7 @@ animationLoop = function(currentTime) {
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
 	// This variable denotes our overall tree growth on a scale of 0 to 1.
-	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / 5));
+	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / 50));
 	
 	// In order to grow and then shrink, we have to oscliate our values.
 	if(approxeq(progress, 1.0)){
