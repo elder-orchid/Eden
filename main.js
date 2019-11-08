@@ -54,12 +54,16 @@ var initCanvas = function() {
 		});
 	}
 
-	// Create a new plant and start the loop!
+	// Create a new plant
 	newPlant();
+
+	// Pre-render leaves and flowers. We only need to do this once
 	preLeaf = drawLeaf();
 	preFlower = drawFlower();
+
+	// Start the animation loop!
 	requestAnimationFrame(animationLoop);
-}
+};
 
 var newPlant = function() {
 	floractx.clearRect(0, 0, floracanv.width, floracanv.height);
@@ -78,7 +82,7 @@ var newPlant = function() {
 	lsystem = new LSystem('F', rules), maxIterations = 5;
 
 	properties = { 
-		// Properties of the plant. These properties are modified as we go
+		// Properties of the plant.
 		angles: [25.7 * Math.PI/180, 15 * Math.PI/180],
 		bWidth: 10,
 		distance: 50,
@@ -91,7 +95,20 @@ var newPlant = function() {
 	for(var i = 0; i < maxIterations; i++) {
 		lsystem.iterate();
 	}
-}
+};
+
+// Mathematical functions
+var avg = function(x, y, p) {
+	return Math.round(x * (1 - p) + y * p);
+};
+
+var sigmoid = function(x) {
+	return 1 / (1 + Math.pow(1.1, -(x-60)));
+};
+
+var approxeq = function(v1, v2) {
+  return Math.abs(v1 - v2) < 0.001;
+};
 
 var clicker = function() {
 	console.log("clicked");
@@ -99,21 +116,7 @@ var clicker = function() {
 	if (audio.paused) {
 		audio.play();
 	}
-
-	// newPlant();
-	// inc = true;
-	// progress = 0.01;
-	// startingTime = currentTime;
-}
-
-// Mathematical functions
-var avg = function(x, y, p) {
-	return Math.round(x * (1 - p) + y * p);
-}
-
-var sigmoid = function(x) {
-	return 1 / (1 + Math.pow(1.1, -(x-60)));
-}
+};
 
 var animationLoop;
 (function(){
@@ -127,10 +130,6 @@ var bgcolors = [
 var inc = true;
 var startingTime;
 var totalElapsedTime;
-
-var approxeq = function(v1, v2) {
-  return Math.abs(v1 - v2) < 0.001;
-};
 
 animationLoop = function(currentTime) {
 	if(!startingTime){startingTime=currentTime;}

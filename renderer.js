@@ -1,4 +1,4 @@
-// Draws a flower at the current location
+// Prerenders a flower to an offscreen canvas
 var drawFlower = function(turtle, percent) {
 	console.log("drawing to the leafCanv");
 
@@ -36,7 +36,7 @@ var drawFlower = function(turtle, percent) {
 	return canv;
 }
 
-// Draws a leaf at the current location
+// Prerenders a leaf to an offscreen canvas
 var drawLeaf = function(turtle, percent) {
 	console.log("drawing to the leafCanv");
 
@@ -85,13 +85,13 @@ var plantRenderer = function(lsystem) {
 
 	var turtle = new Turtle(
 		// Initial state
-		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
+		[plantcanv.width / 2, plantcanv.height, -Math.PI / 2]
 	);
 
 	var leafsize;
 	var stepsize = 1.0 / (maxIterations);
 	var percent = Math.abs((progress - (properties.depth * stepsize)) / stepsize);
-	var cd = 0.0;
+	var cd = 0;
 
 	// Iterate through every character in the L-System
 	for(var i = 0; i < lsystem.sentence.length; i++) {
@@ -147,6 +147,7 @@ var plantRenderer = function(lsystem) {
 			cd--;
 			break;
 		case 'f':
+			// Draws a flower
 			var factor = leafsize / 7 * Math.pow(properties.factors[3], cd);
 			floractx.save();
 			floractx.beginPath();
@@ -160,6 +161,7 @@ var plantRenderer = function(lsystem) {
 			floractx.restore();
 			break;
 		case 'l':
+			// Draws a leaf
 			var factor = leafsize / 10 * Math.pow(properties.factors[2], cd);
 			floractx.save();
 			floractx.beginPath();
