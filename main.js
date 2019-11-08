@@ -92,6 +92,19 @@ var newPlant = function() {
 	}
 }
 
+var clicker = function() {
+	console.log("clicked");
+	
+	if (audio.paused) {
+		audio.play();
+	}
+
+	// newPlant();
+	// inc = true;
+	// progress = 0.01;
+	// startingTime = currentTime;
+}
+
 // Mathematical functions
 var avg = function(x, y, p) {
 	return Math.round(x * (1 - p) + y * p);
@@ -114,43 +127,32 @@ var inc = true;
 var startingTime;
 var totalElapsedTime;
 
+var approxeq = function(v1, v2) {
+  return Math.abs(v1 - v2) < 0.001;
+};
+
 animationLoop = function(currentTime) {
 	if(!startingTime){startingTime=currentTime;}
 	totalElapsedTime=(currentTime-startingTime);
-
-	clicker = function() {
-		console.log("clicked");
-		
-		if (audio.paused) {
-			audio.play();
-		}
-
-		newPlant();
-		inc = true;
-		progress = 0.01;
-		startingTime = currentTime;
-	}
 
 	// Wiggle the angle
 	properties.angles[0] = (Math.cos(progress * Math.PI * 2) + 4) / 10;
 	properties.angles[1] = (Math.sin(progress * Math.PI * 2) + 4) / 10;
 	// Clear the canvases
-	floractx.clearRect(0, 0, plantcanv.width, plantcanv.height);
+	floractx.clearRect(0, 0, floracanv.width, floracanv.height);
 	plantctx.clearRect(0, 0, plantcanv.width, plantcanv.height);
 
 	// This variable denotes our overall tree growth on a scale of 0 to 1.
-	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / 50));
+	progress = Math.abs((inc ? 0 : 1) + (inc ? 1 : -1) * sigmoid(totalElapsedTime / 5));
 	
 	// In order to grow and then shrink, we have to oscliate our values.
-	if(progress >= 0.999) {
+	if(approxeq(progress, 1.0)){
 		inc ^= true;
-		progress = 0.998;
 		startingTime = currentTime;
 	}
-	else if(progress < 0.001) {
+	else if(approxeq(progress, 0.0)) {
 		newPlant();
 		inc ^= true;
-		progress = 0.002;
 		startingTime = currentTime;
 	}
 
@@ -172,11 +174,6 @@ animationLoop = function(currentTime) {
 	// Render the moon
 	luna();
 
-
-
 	requestAnimationFrame(animationLoop);
 }
-
-
-
 })();

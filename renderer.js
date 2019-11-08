@@ -78,6 +78,11 @@ var drawLeaf = function(turtle, percent) {
 
 // Plant renderer obj
 var plantRenderer = function(lsystem) {
+	plantctx.beginPath();
+	bgctx.beginPath();
+	floractx.beginPath();
+
+
 	var turtle = new Turtle(
 		// Initial state
 		[plantcanv.width/2, plantcanv.height, -Math.PI / 2]
@@ -87,7 +92,7 @@ var plantRenderer = function(lsystem) {
 	var stepsize = 1.0 / (maxIterations);
 	var percent = Math.abs((progress - (properties.depth * stepsize)) / stepsize);
 	var cd = 0;
-	var factors = [0.66, 0.9, 1.25, 1.4];
+	var factors = [0.66, 0.9, 1.25, 1.2];
 
 	// Iterate through every character in the L-System
 	for(var i = 0; i < lsystem.sentence.length; i++) {
@@ -137,8 +142,6 @@ var plantRenderer = function(lsystem) {
 			turtle.stack.push(JSON.parse(JSON.stringify(turtle.state)));
 			properties.bWidth *= factors[0];
 			properties.distance *= factors[1];
-			properties.leafLength *= factors[2];
-			properties.petalLength *= factors[3];
 			cd++;
 			break;
 		case ']':
@@ -146,23 +149,25 @@ var plantRenderer = function(lsystem) {
 			turtle.state = turtle.stack.pop();
 			properties.bWidth /= factors[0];
 			properties.distance /= factors[1];
-			properties.leafLength /= factors[2];
-			properties.petalLength /= factors[3];
 			cd--;
 			break;
 		case 'f':
-			var factor = leafsize / 20 * ((cd+1) * 1.4);
+			var factor = leafsize / 10 * (cd * factors[3]);
 			floractx.save();
+			floractx.beginPath();
 
 			floractx.translate(turtle.state[0], turtle.state[1]);
 			floractx.translate(-preFlower.width / 2 * factor, -preFlower.height / 2 * factor);
 
 			floractx.drawImage(preFlower, 0, 0,  preFlower.width * factor, preFlower.height * factor);
+
+			floractx.closePath();
 			floractx.restore();
 			break;
 		case 'l':
-			var factor = leafsize / 20 * ((cd+1) * 1.25);
+			var factor = leafsize / 15 * (cd * factors[2]);
 			floractx.save();
+			floractx.beginPath();
 
 			floractx.translate(turtle.state[0], turtle.state[1]);
 			floractx.rotate(turtle.state[2]);
@@ -170,6 +175,7 @@ var plantRenderer = function(lsystem) {
 			
 			floractx.drawImage(preLeaf, 0, 0,  preLeaf.width * factor, preLeaf.height * factor);
 
+			floractx.closePath();
 			floractx.restore();
 			break;
 		}
